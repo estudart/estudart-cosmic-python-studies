@@ -1,1 +1,1 @@
-![Book Cover](https://github.com/estudart//blob/main/images/book_cover.png)
+![Book Cover](https://github.com/estudart/estudart-cosmic-python-studies/blob/main/images/book_cover.png)
