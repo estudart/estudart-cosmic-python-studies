@@ -37,3 +37,9 @@ def test_can_only_deallocate_allocated_lines():
     batch.deallocate(unllocated_line)
     assert batch.allocated_quantity == 0
     assert batch.available_quantity == 20
+
+def test_allocation_is_idempotent():
+    batch, line = make_batch_and_line("ANGULAR-DESK", 20, 10)
+    batch.allocate(line)
+    batch.allocate(line)
+    assert batch.available_quantity == 10
