@@ -31,3 +31,9 @@ def test_cannot_allocate_if_skus_not_the_same():
     batch = Batch("batch-002", "WOODEN-DOOR", 12, datetime.today())
     different_sku_line = OrderLine("0004", "ELEGANT-LAMP", 12)
     assert batch.can_allocate(different_sku_line) is False
+
+def test_can_only_deallocate_allocated_lines():
+    batch, unllocated_line = make_batch_and_line("SMALL-DESK", 20, 2)
+    batch.deallocate(unllocated_line)
+    assert batch.allocated_quantity == 0
+    assert batch.available_quantity == 20
