@@ -24,3 +24,8 @@ def test_can_allocate_if_available_equal_to_required():
     batch = Batch("batch-002", "ELEGANT-LAMP", 12, datetime.today())
     line = OrderLine("0004", "ELEGANT-LAMP", 12)
     assert batch.can_allocate(line)
+
+def test_cannot_allocate_if_skus_not_the_same():
+    batch = Batch("batch-002", "WOODEN-DOOR", 12, datetime.today())
+    line = OrderLine("0004", "ELEGANT-LAMP", 12)
+    assert batch.can_allocate(line) is False
