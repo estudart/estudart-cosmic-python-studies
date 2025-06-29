@@ -13,17 +13,29 @@ class Batch:
     def __init__(self, batch_id: str, sku: str, qty: int, eta: datetime):
         self.batch_id = batch_id
         self.sku = sku
-        self.qty = qty
         self.eta = eta
-        self.available_qty = qty
+        self._purchased_qty = qty
+        self._allocations = set()
 
     def can_allocate(self, line: OrderLine) -> bool:
         return (
-            line.sku == self.sku
+            self.sku == line.sku
             and
-            line.qty <= self.available_qty
+            self.available_quantity >= line.qty
         )
 
     def allocate(self, line: OrderLine):
         if self.can_allocate(line):
-            self.available_qty -= line.qty
+            self._allocations.add(line)
+    
+    def deallocate(self, line: OrderLine):
+        if line in self._allocations:
+            self._allocations.remove(line)
+    
+    @property
+    def allocated_quantity(self) -> int:
+        return sum(line.qty for line in self._allocations)
+
+    @property
+    def available_quantity(self) -> int:
+        return self._purchased_qty - self.allocated_quantity
