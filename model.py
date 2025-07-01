@@ -17,6 +17,9 @@ class Batch:
         self._purchased_qty = qty
         self._allocations = set()
 
+    def __repr__(self):
+        return f"<Batch {self.reference}>"
+
     def __eq__(self, other):
         if not isinstance(other, Batch):
             return False
