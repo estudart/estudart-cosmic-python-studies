@@ -25,9 +25,6 @@ class Batch:
             return False
         return other.reference == self.reference
 
-    def can_allocate(self, line: OrderLine) -> bool:
-        return self.sku == line.sku and self.available_quantity >= line.qty
-
     def allocate(self, line: OrderLine):
         if self.can_allocate(line):
             self._allocations.add(line)
@@ -43,3 +40,6 @@ class Batch:
     @property
     def available_quantity(self) -> int:
         return self._purchased_qty - self.allocated_quantity
+
+    def can_allocate(self, line: OrderLine) -> bool:
+        return self.sku == line.sku and self.available_quantity >= line.qty
