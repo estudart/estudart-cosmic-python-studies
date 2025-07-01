@@ -10,12 +10,17 @@ class OrderLine:
 
 
 class Batch:
-    def __init__(self, batch_id: str, sku: str, qty: int, eta: datetime):
-        self.batch_id = batch_id
+    def __init__(self, ref: str, sku: str, qty: int, eta: datetime):
+        self.reference = ref
         self.sku = sku
         self.eta = eta
         self._purchased_qty = qty
         self._allocations = set()
+
+    def __eq__(self, other):
+        if not isinstance(other, Batch):
+            return False
+        return other.reference == self.reference
 
     def can_allocate(self, line: OrderLine) -> bool:
         return self.sku == line.sku and self.available_quantity >= line.qty
