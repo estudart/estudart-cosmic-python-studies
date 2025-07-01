@@ -24,6 +24,9 @@ class Batch:
         if not isinstance(other, Batch):
             return False
         return other.reference == self.reference
+    
+    def __hash__(self):
+        return hash(self.reference)
 
     def allocate(self, line: OrderLine):
         if self.can_allocate(line):
