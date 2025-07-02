@@ -11,9 +11,9 @@ def allocate(line: OrderLine, batch_list: List[Batch]) -> str:
         batch.allocate(line)
         return batch.reference
     except StopIteration as err:
-        raise OuOfStock(f"Out of stock for sku: {line.sku}")
+        raise OutofStock(f"Out of stock for sku: {line.sku}")
 
-class OuOfStock(Exception):
+class OutofStock(Exception):
     pass
 
 @dataclass(frozen=True)
