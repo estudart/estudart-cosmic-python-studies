@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 
-from model import Batch, OrderLine, allocate
+import pytest
+
+from model import Batch, OrderLine, allocate, OutofStock
 
 
 
@@ -20,5 +22,14 @@ def test_preferable_batch_to_allocate():
 
     allocate(line, [in_stock_batch, shipment_batch])
 
-    assert in_stock_batch.available_quantity == 16
-    assert shipment_batch == 30
+    assert in_stock_batch.available_quantity == 15
+    assert shipment_batch.available_quantity == 30
+
+def test_raises_out_of_stocks_exception_if_cannot_allocate():
+    batch = Batch("002", "MAJESTIC-TABLE", 6, datetime.today())
+    line_1 = OrderLine("ref-id", "MAJESTIC-TABLE", 6)
+    allocate(line_1, [batch])
+
+    with pytest.raises(OutofStock, match=f"Out of stock for sku: MAJESTIC-TABLE"):
+        line_2 = OrderLine("ref-id", "MAJESTIC-TABLE", 1)
+        allocate(line_2, [batch])
