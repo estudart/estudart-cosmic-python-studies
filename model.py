@@ -1,6 +1,20 @@
+from __future__ import annotations
 from datetime import datetime
 from dataclasses import dataclass
+from typing import List
 
+
+
+def allocate(line: OrderLine, batch_list: List[Batch]) -> str:
+    try:
+        batch = next(b for b in sorted(batch_list) if b.can_allocate(line))
+        batch.allocate(line)
+        return batch.reference
+    except StopIteration as err:
+        raise OuOfStock(f"Out of stock for sku: {line.sku}")
+
+class OuOfStock(Exception):
+    pass
 
 @dataclass(frozen=True)
 class OrderLine:
@@ -24,6 +38,13 @@ class Batch:
         if not isinstance(other, Batch):
             return False
         return other.reference == self.reference
+
+    def __gt__(self, other):
+        if not self.eta:
+            return False
+        if not other.eta:
+            return True
+        return self.eta > other.eta
     
     def __hash__(self):
         return hash(self.reference)
