@@ -13,3 +13,10 @@ class AbstractRepository(abc.ABC):
     def get(self, referenc: str) -> model.Batch:
         raise NotImplementedError
     
+
+class SQLAlchemyRepository(AbstractRepository):
+    def add(self, batch: model.Batch) -> bool:
+        return
+    
+    def get(self, reference: str) -> model.Batch:
+        return
