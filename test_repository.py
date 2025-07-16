@@ -60,7 +60,7 @@ def test_repository_can_retrieve_a_batch_with_allocations(session):
     expected = model.Batch("batch1", "GENERIC-SOFA", 100, eta=None)
     assert retrieved == expected
     assert retrieved.sku == expected.sku
-    assert retrieved._purchased_quantity == expected._purchased_quantity
+    assert retrieved._purchased_qty == expected._purchased_qty
     assert retrieved._allocations == {
         model.OrderLine("order1", "GENERIC-SOFA", 12),
     }
