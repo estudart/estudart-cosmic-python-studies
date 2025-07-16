@@ -54,7 +54,7 @@ def test_repository_can_retrieve_a_batch_with_allocations(session):
     insert_batch(session, "batch2")
     insert_allocation(session, orderline_id, batch1_id)
 
-    repo = repository.SqlAlchemyRepository(session)
+    repo = repository.SQLAlchemyRepository(session)
     retrieved = repo.get("batch1")
 
     expected = model.Batch("batch1", "GENERIC-SOFA", 100, eta=None)
