@@ -15,8 +15,14 @@ class AbstractRepository(abc.ABC):
     
 
 class SQLAlchemyRepository(AbstractRepository):
+    def __init__(self, session):
+        self.session = session
+
     def add(self, batch: model.Batch) -> bool:
-        return
+        return self.session.add(batch)
     
     def get(self, reference: str) -> model.Batch:
-        return
+        return self.session.query(model.Batch).filter_by(reference=reference).one()
+
+    def list(self):
+        return self.session.query(model.Batch).all()
