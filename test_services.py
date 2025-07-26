@@ -5,6 +5,13 @@ import services
 
 
 
+class FakeSession:
+    committed = False
+
+    def commit(self):
+        self.committed = True
+
+
 class FakeRepository:
     def __init__(self, batches: list[model.Batch]):
         self._batches = set(batches)
