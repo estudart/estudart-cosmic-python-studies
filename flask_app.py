@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 import config
 import model
+import services
 import orm
 import repository
 
@@ -25,13 +26,9 @@ def allocate_endpoint():
         request.json["order_id"], request.json["sku"], request.json["qty"],
     )
 
-    if not is_valid_sku(line.sku, batches):
-        return {"message": f"Inavlid sku {line.sku}"}, 400
-
     try:
-        batchref = model.allocate(line, batches)
-    except model.OutofStock as e:
+        batchref = services.allocate(line, batches)
+    except services.InvalidSku as e:
         return {"message": str(e)}, 400
 
-    session.commit()
     return {"batchref": batchref}, 201
