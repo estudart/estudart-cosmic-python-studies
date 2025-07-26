@@ -4,7 +4,14 @@ import requests
 
 import config
 
+def random_sku(sku = None):
+    return sku if sku else "random_sku"
 
+def random_batchref(ref = None):
+    return str(ref) if ref else "random_batchref"
+
+def random_orderid(order_id):
+    return order_id if order_id else "random_orderid"
 
 @pytest.mark.usefixtures("restart_api")
 def test_api_returns_allocation(add_stock):
@@ -19,7 +26,7 @@ def test_api_returns_allocation(add_stock):
             (otherbatch, othersku, 100, None),
         ]
     )
-    data = {"orderid": random_oderid(), "sku": sku, "qty": 3}
+    data = {"orderid": random_orderid(), "sku": sku, "qty": 3}
     url = config.get_api_url()
 
     r = requests.post(f"{url}/allocate", json=data)
