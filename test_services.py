@@ -33,7 +33,6 @@ def test_returns_allocation():
     result = services.allocate(line, repo, FakeSession())  #(2) (3)
     assert result == "b1"
 
-
 def test_error_for_invalid_sku():
     line = model.OrderLine("o1", "NONEXISTENTSKU", 10)
     batch = model.Batch("b1", "AREALSKU", 100, eta=None)
@@ -41,3 +40,12 @@ def test_error_for_invalid_sku():
 
     with pytest.raises(services.InvalidSku, match="Invalid sku NONEXISTENTSKU"):
         services.allocate(line, repo, FakeSession())  #(2) (3)
+
+def test_commits():
+    line = model.OrderLine("o1", "OMINOUS-MIRROR", 10)
+    batch = model.Batch("b1", "OMINOUS-MIRROR", 30, eta=None)
+    repo = FakeRepository()
+    session = FakeSession([batch])
+
+    services.allocate(line, repo, session)
+    assert session.committed is True
