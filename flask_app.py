@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -29,6 +29,6 @@ def allocate_endpoint():
     try:
         batchref = services.allocate(line, batches)
     except services.InvalidSku as e:
-        return {"message": str(e)}, 400
+        return jsonify({"message": str(e)}), 400
 
-    return {"batchref": batchref}, 201
+    return jsonify({"batchref": batchref}), 201
