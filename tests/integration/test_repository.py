@@ -1,7 +1,7 @@
 from datetime import datetime
 import pytest
 
-import model, repository
+import domain.model as model, adapters.repository as repository
 
 
 

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from model import OrderLine, Batch
+from domain.model import OrderLine, Batch
 
 
 

@@ -3,25 +3,24 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import config
-import model
-import services
-import orm
-import repository
+import domain.model as model
+import service_layer.services as services
+from adapters import (
+    SQLAlchemyRepository,
+    start_mappers
+)
 
 
 
-orm.start_mappers()
+start_mappers()
 get_session = sessionmaker(bind=create_engine(config.get_postgres_uri()))
 app = Flask(__name__)
 
 
-def is_valid_sku(sku, batches):
-    return sku in {b.sku for b in batches}
-
 @app.route("/allocate", methods=["POST"])
 def allocate_endpoint():
     session = get_session()
-    batches = repository.SQLAlchemyRepository(session).list()
+    batches = SQLAlchemyRepository(session).list()
     line = model.OrderLine(
         request.json["order_id"], request.json["sku"], request.json["qty"],
     )

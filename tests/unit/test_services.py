@@ -1,7 +1,7 @@
 import pytest
 
-import model
-import services
+import domain.model as model
+import service_layer.services as services
 
 
 
