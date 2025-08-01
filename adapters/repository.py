@@ -1,6 +1,6 @@
 import abc
 
-import model
+import domain.model as model
 
 
 
@@ -11,6 +11,10 @@ class AbstractRepository(abc.ABC):
     
     @abc.abstractmethod
     def get(self, referenc: str) -> model.Batch:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def list(self) -> list:
         raise NotImplementedError
     
 

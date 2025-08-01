@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from model import Batch, OrderLine, allocate, OutofStock
+from domain.model import Batch, OrderLine, allocate, OutofStock
 
 
 

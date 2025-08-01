@@ -13,6 +13,17 @@ def allocate(line: OrderLine, batch_list: List[Batch]) -> str:
     except StopIteration as err:
         raise OutofStock(f"Out of stock for sku: {line.sku}")
 
+def deallocate(line: OrderLine, batch_list: List[Batch]):
+    try:
+        batch = next(b for b in batch_list if b.can_deallocate(line))
+        batch.deallocate(line)
+        return batch.reference
+    except StopIteration as err:
+        raise NotAllocatedLine(f"Line with ref: {line.ref} is not currently allocated in any Batch")
+
+class NotAllocatedLine(Exception):
+    pass
+
 class OutofStock(Exception):
     pass
 
@@ -54,7 +65,7 @@ class Batch:
             self._allocations.add(line)
     
     def deallocate(self, line: OrderLine):
-        if line in self._allocations:
+        if self.can_deallocate(line):
             self._allocations.remove(line)
     
     @property
@@ -67,3 +78,6 @@ class Batch:
 
     def can_allocate(self, line: OrderLine) -> bool:
         return self.sku == line.sku and self.available_quantity >= line.qty
+
+    def can_deallocate(self, line: OrderLine) -> bool:
+        return line in self._allocations
