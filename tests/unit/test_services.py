@@ -29,11 +29,10 @@ class FakeRepository:
 
 tomorrow = datetime.today() + timedelta(days=1)
 
-def test_returns_allocation():
-    batch = model.Batch("b1", "COMPLICATED-LAMP", 100, eta=None)
-    repo = FakeRepository([batch])
-
-    result = services.allocate("o1", "COMPLICATED-LAMP", 10, repo, FakeSession())  #(2) (3)
+def test_allocate_returns_allocation():
+    repo, session = FakeRepository([]), FakeSession()
+    services.add_batch("b1", "COMPLICATED-LAMP", 100, None, repo, session)
+    result = services.allocate("o1", "COMPLICATED-LAMP", 10, repo, FakeSession())
     assert result == "b1"
 
 def test_can_deallocate():
@@ -45,13 +44,12 @@ def test_can_deallocate():
     result = services.deallocate(line, repo, FakeSession())
     assert result == "ref1"
 
-def test_error_for_invalid_sku():
-    line = model.OrderLine("o1", "NONEXISTENTSKU", 10)
-    batch = model.Batch("b1", "AREALSKU", 100, eta=None)
-    repo = FakeRepository([batch])  #(1)
+def test_allocate_errors_for_invalid_sku():
+    repo, session = FakeRepository([]), FakeSession()
+    services.add_batch("b1", "AREALSKU", 100, None, repo, session)
 
     with pytest.raises(services.InvalidSku, match="Invalid sku NONEXISTENTSKU"):
-        services.allocate(line, repo, FakeSession())  #(2) (3)
+        services.allocate("o1", "NONEXISTENTSKU", 10, repo, FakeSession())
 
 def test_commits():
     line = model.OrderLine("o1", "OMINOUS-MIRROR", 10)
