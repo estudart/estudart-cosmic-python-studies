@@ -1,14 +1,30 @@
-from datetime import datetime
+from datetime import date, timedelta
+import pytest
+from domain.model import allocate, OrderLine, Batch, OutOfStock
 
-from domain.model import OrderLine, Batch
-
-
+today = date.today()
+tomorrow = today + timedelta(days=1)
+later = tomorrow + timedelta(days=10)
 
 def make_batch_and_line(sku: str, batch_qty: int, line_qty: int):
     return (
-        Batch("batch-001", sku, batch_qty, eta=datetime.today()),
+        Batch("batch-001", sku, batch_qty, eta=today),
         OrderLine("ref-id", sku, line_qty)
     )
+
+today = date.today()
+tomorrow = today + timedelta(days=1)
+later = tomorrow + timedelta(days=10)
+
+def test_prefers_current_stock_batches_to_shipments():
+    in_stock_batch = Batch("in-stock-batch", "RETRO-CLOCK", 100, eta=None)
+    shipment_batch = Batch("shipment-batch", "RETRO-CLOCK", 100, eta=tomorrow)
+    line = OrderLine("oref", "RETRO-CLOCK", 10)
+
+    allocate(line, [in_stock_batch, shipment_batch])
+
+    assert in_stock_batch.available_quantity == 90
+    assert shipment_batch.available_quantity == 100
 
 def test_allocating_to_a_batch_reduces_the_available_quantity():
     batch, line = make_batch_and_line("SMALL-CHAIR", 40, 2)
@@ -28,7 +44,7 @@ def test_can_allocate_if_available_equal_to_required():
     assert batch.can_allocate(line)
 
 def test_cannot_allocate_if_skus_not_the_same():
-    batch = Batch("batch-002", "WOODEN-DOOR", 12, datetime.today())
+    batch = Batch("batch-002", "WOODEN-DOOR", 12, today)
     different_sku_line = OrderLine("0004", "ELEGANT-LAMP", 12)
     assert batch.can_allocate(different_sku_line) is False
 
