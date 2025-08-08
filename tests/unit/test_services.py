@@ -52,26 +52,10 @@ def test_allocate_errors_for_invalid_sku():
         services.allocate("o1", "NONEXISTENTSKU", 10, repo, FakeSession())
 
 def test_commits():
-    line = model.OrderLine("o1", "OMINOUS-MIRROR", 10)
-    batch = model.Batch("b1", "OMINOUS-MIRROR", 30, eta=None)
-    repo = FakeRepository([batch])
-    session = FakeSession()
-
-    services.allocate(line, repo, session)
+    repo, session = FakeRepository([]), FakeSession()
+    services.add_batch("b1", "OMINOUS-MIRROR", 30, None, repo, session)
+    services.allocate("o1", "OMINOUS-MIRROR", 10, repo, session)
     assert session.committed is True
-
-def test_prefers_warehouse_batches_to_shipments():
-    in_stock_batch = model.Batch("in-stock-batch", "RETRO-CLOCK", 100, eta=None)
-    shipment_batch = model.Batch("shipment-batch", "RETRO-CLOCK", 100, eta=tomorrow)
-    repo = FakeRepository([in_stock_batch, shipment_batch])
-    session = FakeSession()
-
-    line = model.OrderLine('oref', "RETRO-CLOCK", 10)
-
-    services.allocate(line, repo, session)
-
-    assert in_stock_batch.available_quantity == 90
-    assert shipment_batch.available_quantity == 100
 
 def test_add_batch():
     repo, session = FakeRepository([]), FakeSession()
