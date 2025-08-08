@@ -74,3 +74,9 @@ def test_prefers_warehouse_batches_to_shipments():
 
     assert in_stock_batch.available_quantity == 90
     assert shipment_batch.available_quantity == 100
+
+def test_add_batch():
+    repo, session = FakeRepository([]), FakeSession()
+    services.add_batch("o1", "MAJESTIC-SOFA", 10, None, repo, session)
+    assert repo.get("o1") is not None
+    assert session.committed
