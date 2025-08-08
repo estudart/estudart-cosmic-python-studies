@@ -30,11 +30,10 @@ class FakeRepository:
 tomorrow = datetime.today() + timedelta(days=1)
 
 def test_returns_allocation():
-    line = model.OrderLine("o1", "COMPLICATED-LAMP", 10)
     batch = model.Batch("b1", "COMPLICATED-LAMP", 100, eta=None)
-    repo = FakeRepository([batch])  #(1)
+    repo = FakeRepository([batch])
 
-    result = services.allocate(line, repo, FakeSession())  #(2) (3)
+    result = services.allocate("o1", "COMPLICATED-LAMP", 10, repo, FakeSession())  #(2) (3)
     assert result == "b1"
 
 def test_can_deallocate():
