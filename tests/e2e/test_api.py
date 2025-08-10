@@ -13,23 +13,39 @@ def random_batchref(ref = None):
 def random_orderid(order_id):
     return order_id if order_id else "random_orderid"
 
+def post_to_add_batch(ref, sku, qty, eta):
+    url = config.get_api_url()
+    r = requests.post(
+        url=f"{url}/allocate",
+        json={
+            "order_id": ref,
+            "sku": sku,
+            "qty": qty,
+            "eta": eta,
+        }
+    )
+    assert r.status_code == 200
+
+@pytest.mark.usefixtures("postgres_db")
 @pytest.mark.usefixtures("restart_api")
-def test_api_returns_allocation(add_stock):
+def test_happy_path_returns_200_and_allocated_batch():
     sku, othersku = random_sku(), random_sku("other")
     earlybatch = random_batchref(1)
     laterbatch = random_batchref(2)
     otherbatch = random_batchref(3)
-    add_stock(
-        [
-            (laterbatch, sku, 100, "2011-01-02"),
-            (earlybatch, sku, 100, "2011-01-01"),
-            (otherbatch, othersku, 100, None),
-        ]
-    )
-    data = {"orderid": random_orderid(), "sku": sku, "qty": 3}
-    url = config.get_api_url()
+    post_to_add_batch(laterbatch, sku, 100, "2011-01-02")
+    post_to_add_batch(earlybatch, sku, 100, "2011-01-01")
+    post_to_add_batch(otherbatch, othersku, 100, None)
 
-    r = requests.post(f"{url}/allocate", json=data)
+    url = config.get_api_url()
+    r = requests.post(
+        f"{url}/allocate", 
+        json={
+            "orderid": random_orderid(), 
+            "sku": sku, 
+            "qty": 3
+        }
+    )
 
     assert r.status_code == 201
     assert r.json()["batchref"] == earlybatch
@@ -39,9 +55,8 @@ def test_allocations_are_persisted(add_stock):
     sku = random_sku()
     batch1, batch2 = random_batchref(1), random_batchref(2)
     order1, order2 = random_orderid(1), random_orderid(2)
-    add_stock(
-        [(batch1, sku, 10, "2011-01-01"), (batch2, sku, 10, "2011-01-02"),]
-    )
+    post_to_add_batch(batch1, sku, 100, "2011-01-02")
+    post_to_add_batch(batch2, sku, 100, "2011-01-01")
     line1 = {"orderid": order1, "sku": sku, "qty": 10}
     line2 = {"orderid": order2, "sku": sku, "qty": 10}
     url = config.get_api_url()
@@ -57,21 +72,34 @@ def test_allocations_are_persisted(add_stock):
 @pytest.mark.usefixtures("restart_api")
 def test_400_message_for_out_of_stock(add_stock):
     sku, small_batch, large_order = random_sku(), random_batchref(), random_orderid()
-    add_stock(
-        [(small_batch, sku, 10, "2011-01-01"),]
-    )
-    data = {"orderid": large_order, "sku": sku, "qty": 20}
+    post_to_add_batch(small_batch, sku, 10, "2011-01-01")
+
     url = config.get_api_url()
-    r = requests.post(f"{url}/allocate", json=data)
+    r = requests.post(
+        url=f"{url}/allocate", 
+        json={
+            "orderid": large_order, 
+            "sku": sku, 
+            "qty": 20
+        }
+    )
+
     assert r.status_code == 400
     assert r.json()["message"] == f"Out of stock for sku {sku}"
 
 @pytest.mark.usefixtures("restart_api")
 def test_400_message_for_invalid_sku():
     orderid, unknown_sku = random_orderid(), random_sku()
-    data = {"orderid": orderid, "sku": unknown_sku, "qty": 10}
     url = config.get_api_url()
-    r = requests.post(f"{url}/allocate", json=data)
+    r = requests.post(
+        url=f"{url}/allocate", 
+        json={
+            "orderid": orderid, 
+            "sku": unknown_sku, 
+            "qty": 10
+        }
+    )
+
     assert r.status_code == 400
     assert r.json()["message"] == f"Inavlid sku {unknown_sku}"
 
@@ -81,17 +109,19 @@ def test_happy_path_returns_201_and_allocated_batch(add_stock):
     earlybatch = random_batchref(1)
     laterbatch = random_batchref(2)
     otherbatch = random_batchref(3)
-    add_stock(
-        [
-            (laterbatch, sku, 100, "2011-01-02"),
-            (earlybatch, sku, 100, "2011-01-01"),
-            (otherbatch, othersku, 100, None),
-        ]
-    )
-    data = {"orderid": random_orderid(), "sku": sku, "qty": 3}
-    url = config.get_api_url()
+    post_to_add_batch(laterbatch, sku, 100, "2011-01-02")
+    post_to_add_batch(earlybatch, sku, 100, "2011-01-01")
+    post_to_add_batch(otherbatch, othersku, 100, None)
 
-    r = requests.post(f"{url}/allocate", json=data)
+    url = config.get_api_url()
+    r = requests.post(
+        url=f"{url}/allocate", 
+        json={
+            "orderid": random_orderid(), 
+            "sku": sku, 
+            "qty": 3
+        }
+    )
 
     assert r.status_code == 201
     assert r.json()["batchref"] == earlybatch
