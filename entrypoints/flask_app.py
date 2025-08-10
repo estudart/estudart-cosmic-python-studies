@@ -17,14 +17,13 @@ app = Flask(__name__)
 
 
 @app.route("/add_batch", methods=["POST"])
-def allocate_endpoint():
+def add_batch_endpoint():
     session = get_session()
     repo = repository.SQLAlchemyRepository(session)
     eta = request.json["eta"]
     if eta is not None:
         eta = datetime.fromisoformat(eta).date()
-
-    services.allocate(
+    services.add_batch(
         request.json["order_id"], 
         request.json["sku"], 
         request.json["qty"],
