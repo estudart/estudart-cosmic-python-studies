@@ -16,7 +16,7 @@ get_session = sessionmaker(bind=create_engine(config.get_postgres_uri()))
 app = Flask(__name__)
 
 
-@app.route("/add_batch", methods=["POST"])
+@app.route("/batch", methods=["POST"])
 def add_batch_endpoint():
     session = get_session()
     repo = repository.SQLAlchemyRepository(session)
