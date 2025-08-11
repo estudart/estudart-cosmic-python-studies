@@ -5,9 +5,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import config
-import domain.model as model
-import service_layer.services as services
-from adapters import repository, orm
+from domain import model
+from service_layer import services, unit_of_work
+from adapters import orm
 
 
 
@@ -18,8 +18,6 @@ app = Flask(__name__)
 
 @app.route("/batch", methods=["POST"])
 def add_batch_endpoint():
-    session = get_session()
-    repo = repository.SQLAlchemyRepository(session)
     eta = request.json["eta"]
     if eta is not None:
         eta = datetime.fromisoformat(eta).date()
@@ -28,22 +26,18 @@ def add_batch_endpoint():
         request.json["sku"], 
         request.json["qty"],
         eta,
-        repo, 
-        session,
+        unit_of_work.SqlAlchemyUnitOFWork(),
     )
     return "OK", 201
 
 @app.route("/allocate", methods=["POST"])
 def allocate_endpoint():
-    session = get_session()
-    repo = repository.SQLAlchemyRepository(session)
     try:
         batchref = services.allocate(
             request.json["order_id"], 
             request.json["sku"], 
             request.json["qty"],
-            repo, 
-            session,
+            unit_of_work.SqlAlchemyUnitOFWork(),
         )
     except (model.OutofStock, services.InvalidSku) as e:
         return jsonify({"message": str(e)}), 400
