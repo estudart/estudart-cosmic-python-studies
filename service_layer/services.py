@@ -1,8 +1,8 @@
 from typing import Optional
 from datetime import date
 
-import domain.model as model
-import adapters.repository as repository
+from domain import model
+from service_layer import unit_of_work
 
 
 
@@ -14,31 +14,33 @@ def is_valid_sku(sku, batches):
 
 def add_batch(
         ref: str, sku: str, qty: int, eta: Optional[date], 
-        repo: repository.AbstractRepository, session,
+        uow: unit_of_work.AbstractUnitOfWork,
     ) -> None:
-    repo.add(model.Batch(ref, sku, qty, eta))
-    session.commit()
+    uow.batches.add(model.Batch(ref, sku, qty, eta))
+    uow.commit()
 
 def allocate(
         orderid: str, sku: str, qty: int, 
-        repo: repository.AbstractRepository, session
+        uow: unit_of_work.AbstractUnitOfWork,
     ) -> str:
-    batches = repo.list()
     line = model.OrderLine(orderid, sku, qty)
-    if not is_valid_sku(line.sku, batches):
-        raise InvalidSku(f"Invalid sku {line.sku}")
-    batchref = model.allocate(line, batches)
-    session.commit()
+    with uow:
+        batches = uow.batches.list()
+        if not is_valid_sku(line.sku, batches):
+            raise InvalidSku(f"Invalid sku {line.sku}")
+        batchref = model.allocate(line, batches)
+        uow.commit()
     return batchref
 
 def deallocate(
         orderid: str, sku: str, qty: int, 
-        repo: repository.AbstractRepository, session
+        uow: unit_of_work.AbstractUnitOfWork,
     ) -> str:
-    batches = repo.list()
     line = model.OrderLine(orderid, sku, qty)
-    if not is_valid_sku(line.sku, batches):
-        raise InvalidSku(f"Invalid sku {line.sku}")
-    batchref = model.deallocate(line, batches)
-    session.commit()
+    with uow:
+        batches = uow.batches.list()
+        if not is_valid_sku(line.sku, batches):
+            raise InvalidSku(f"Invalid sku {line.sku}")
+        batchref = model.deallocate(line, batches)
+        uow.commit()
     return batchref
