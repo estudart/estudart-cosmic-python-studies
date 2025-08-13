@@ -8,25 +8,29 @@ import config
 
 
 
+class AbstractUnitOfWork(abc.ABC):
+    batches: repository.AbstractRepository
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.rollback()
+
+    @abc.abstractmethod
+    def commit(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def rollback(self):
+        raise NotImplementedError
+
+
 DEFAULT_SESSION_FACTORY = sessionmaker(
     bind=create_engine(
         config.get_postgres_uri()
     )
 )
-
-class AbstractUnitOfWork(abc.ABC):
-    batches: repository.AbstractRepository  #(1)
-
-    def __exit__(self, *args):  #(2)
-        self.rollback()  #(4)
-
-    @abc.abstractmethod
-    def commit(self):  #(3)
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def rollback(self):  #(4)
-        raise NotImplementedError
 
 
 class SqlAlchemyUnitOFWork(AbstractUnitOfWork):
@@ -36,6 +40,7 @@ class SqlAlchemyUnitOFWork(AbstractUnitOfWork):
     def __enter__(self):
         self.session = self.session_factory()
         self.batches = repository.SQLAlchemyRepository(self.session)
+        return super().__enter__()
     
     def __exit__(self, *args):
         super().__exit__(*args)
